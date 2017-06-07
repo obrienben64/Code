@@ -1,0 +1,373 @@
+title Batch RPG
+color 0a
+@echo off
+:menu
+cls
+echo BATCH RPG
+echo ---------
+echo.
+echo 1)Start new
+echo 2)Load
+echo 3)Exit
+echo.
+set /p input=Enter:
+ 
+if %input% == 1 goto start
+if %input% == 2 goto load
+if %input% == 3 exit
+goto menu
+ 
+:start
+set level=1
+set health=100
+set money=50
+set exp=0
+set expmax=100
+set str=10
+set def=0
+set wep=0
+set wepdis=None
+set arm=0
+set armdis=None
+set hpots=2
+cls
+echo What's your name?
+echo.
+set /p name=Enter:
+ 
+goto main
+ 
+:main
+if %exp% GEQ %expmax% goto levelup
+if %money% LSS 0 set money=0
+if %wep% == 1 set wepdis=Dagger
+if %wep% == 2 set wepdis=Sword
+if %wep% == 3 set wepdis=2h Sword
+if %wep% == 1 set str=13
+if %wep% == 2 set str=16
+if %wep% == 3 set str=19
+if %arm% == 1 set armdis=Leather
+if %arm% == 2 set armdis=Iron
+if %arm% == 3 set armdis=Steel
+if %arm% == 1 set def=2
+if %arm% == 2 set def=3
+if %arm% == 3 set def=5
+cls
+echo BATCH RPG
+echo ------------------------------------------
+echo %name%  Lvl:%level%   Money:$%money%
+echo Hp:%health%/100
+echo Xp:%exp%/%expmax%
+echo Weapon:%wepdis%    Armour:%armdis%
+echo ------------------------------------------
+echo 1)Fight
+echo 2)Shop
+echo 3)Save
+echo 4)Exit
+echo.
+set /p input=Enter:
+ 
+if %input% == 1 goto fight1
+if %input% == 2 goto shop
+if %input% == 3 goto save
+if %input% == 4 goto exit
+goto main
+ 
+:load
+if not exist save.sav goto loaderror
+< save.sav (
+set /p name=
+set /p level=
+set /p health=
+set /p money=
+set /p exp=
+set /p expmax=
+set /p str=
+set /p def=
+set /p wep=
+set /p wepdis=
+set /p arm=
+set /p armdis=
+set /p hpots=
+)
+cls
+echo Game loaded!
+pause >nul
+goto main
+ 
+:loaderror
+cls
+echo No save file found...
+pause >nul
+goto menu
+ 
+:fight1
+set enhealth=70
+ 
+:fight
+if %health% GTR 100 set health=100
+if %health% LSS 1 goto lose
+cls
+echo BATCH RPG - FIGHT
+echo -------------------------
+echo %name%
+echo Hp:%health%/100
+echo Weapon:%wepdis%  Armour:%armdis%
+echo --------------------------
+echo Enemy
+echo Hp:%enhealth%/70
+echo.
+echo 1)Attack
+echo 2)Drink Potion
+echo 3)Flee
+echo.
+set /p input=Enter:
+ 
+if %input% == 1 goto attack
+if %input% == 2 goto potion
+if %input% == 3 goto flee
+goto fight
+ 
+:attack
+set num=%random:~-2%
+if %num% GTR %str% goto attack
+if %num% LSS 0 goto attack
+if %num% == 00 set num=0
+if %num% == 01 set num=1
+if %num% == 02 set num=2
+if %num% == 03 set num=3
+if %num% == 04 set num=4
+if %num% == 05 set num=5
+if %num% == 06 set num=6
+if %num% == 07 set num=7
+if %num% == 08 set num=0
+if %num% == 09 set num=7
+cls
+echo You take %num% health from
+echo the enemy.
+pause >nul
+set /a enhealth= %enhealth% - %num%
+set /a exp= %exp% + %num% * 2
+goto enattack
+ 
+:enattack
+if %enhealth% LSS 1 goto win
+set num=%random:~-1%
+if %num% GTR 7 goto enattack
+if %num% LSS 0 goto enattack
+set /a num= %num% - %def%
+if %num% LSS 0 set num=0
+cls
+echo The enemy takes %num% health
+echo from you.
+pause >nul
+set /a health= %health% - %num%
+goto fight
+ 
+:win
+set num=%random:~-2%
+if %num% GTR 35 goto win
+if %num% LSS 15 goto win
+cls
+echo Congratulations, you killed
+echo the enemy!
+echo.
+echo You found $%num%
+pause >nul
+set /a money= %money% + %num%
+goto main
+ 
+:lose
+cls
+echo Oh no, you died!
+echo.
+echo -$40
+pause >nul
+set /a money= %money% - 40
+goto main
+ 
+:potion
+cls
+echo 1)Drink Potion
+echo 2)Back
+echo.
+set /p input=Enter:
+ 
+if %input% == 2 goto fight
+if %hpots% LSS 1 set goto nopots
+if %input% == 1 set health=%health%
+if %input% == 1 set /a hpots= %hpots% - 1
+if %input% == 1 set /a health= %health% + 35
+if %input% == 1 goto fight
+goto potion
+ 
+:nopots
+cls
+echo You have no potions left!
+pause >nul
+goto fight
+ 
+:flee
+cls
+echo You run away!
+echo.
+echo -$30
+pause >nul
+set /a money= %money% - 30
+goto main
+ 
+:shop
+cls
+echo BATCH RPG - SHOP
+echo ----------------------------
+echo %name%
+echo Money:$%money%
+echo ----------------------------
+echo [a)Weapons]b)Armour]c)Potions]
+echo.
+echo 1)Dagger    $30     Lvl: 1
+echo 2)Sword     $70     Lvl: 3
+echo 3)2h Sword  $150    Lvl: 6
+echo 4)Back
+echo.
+set /p input=Enter:
+ 
+if %input% == 4 goto main
+if %input% == b goto shop2
+if %input% == c goto shop3
+if %money% LSS 30 goto nofunds
+if %input% == 1 set /a money= %money% - 30
+if %input% == 1 set wep=1
+if %input% == 1 goto main
+if %level% LSS 3 goto nolev
+if %money% LSS 70 goto nofunds
+if %input% == 2 set /a money= %money% - 70
+if %input% == 2 set wep=2
+if %input% == 2 goto main
+if %level% LSS 6 goto nolev
+if %money% LSS 150 goto nofunds
+if %input% == 3 set /a money= %money% - 150
+if %input% == 3 set wep=3
+if %input% == 3 goto main
+goto shop
+ 
+:shop2
+cls
+echo BATCH RPG - SHOP
+echo ----------------------------
+echo %name%
+echo Money:$%money%
+echo ----------------------------
+echo [a)Weapons[b)Armour]c)Potions]
+echo.
+echo 1)Leather   $50     Lvl: 1
+echo 2)Iron      $90     Lvl: 3
+echo 3)Steel     $200    Lvl: 6
+echo 4)Back
+echo.
+set /p input=Enter:
+ 
+if %input% == 4 goto main
+if %input% == b goto shop2
+if %input% == c goto shop3
+if %money% LSS 50 goto nofunds
+if %input% == 1 set /a money= %money% - 50
+if %input% == 1 set arm=1
+if %input% == 1 goto main
+if %level% LSS 3 goto nolev
+if %money% LSS 90 goto nofunds
+if %input% == 2 set /a money= %money% - 90
+if %input% == 2 set arm=2
+if %input% == 2 goto main
+if %level% LSS 6 goto nolev
+if %money% LSS 200 goto nofunds
+if %input% == 3 set /a money= %money% - 200
+if %input% == 3 set arm=3
+if %input% == 3 goto main
+goto shop2
+ 
+:shop3
+cls
+echo BATCH RPG - SHOP
+echo ----------------------------
+echo %name%
+echo Money:$%money%
+echo ----------------------------
+echo [a)Weapons[b)Armour[c)Potions]
+echo.
+echo 1)Health Potion    $30
+echo 2)Level Potion     $1000
+echo 3)Back
+echo.
+echo.
+set /p input=Enter:
+ 
+if %input% == 3 goto main
+if %input% == a goto shop1
+if %input% == b goto shop2
+if %money% LSS 30 goto nofunds
+if %input% == 1 set /a money= %money% - 30
+if %input% == 1 set hpots= %hpots% + 1
+if %input% == 1 goto main
+if %money% LSS 1000 goto nofunds
+if %input% == 2 set /a money= %money% - 1000
+if %input% == 2 goto main
+goto shop3
+ 
+:nofunds
+cls
+echo You don't have enough money
+echo to purchase this item.
+pause >nul
+goto main
+ 
+:nolev
+cls
+echo Your level isn't high enough
+echo to purchase this item.
+pause >nul
+goto main
+ 
+:save
+(
+echo %name%
+echo %level%
+echo %health%
+echo %money%
+echo %exp%
+echo %expmax%
+echo %str%
+echo %def%
+echo %wep%
+echo %wepdis%
+echo %arm%
+echo %armdis%
+echo %hpots%
+) > save.sav
+cls
+echo Game Saved
+pause >nul
+goto main
+ 
+:exit
+cls
+echo All unsaved progress will be
+echo lost, are you sure? (Y/N)
+set /p input=
+ 
+if %input% == y exit
+if %input% == n goto main
+goto exit
+pause >nul
+exit
+ 
+:levelup
+set /a level= %level% + 1
+set exp=0
+set /a expmax= %expmax% * 150 / 100
+cls
+echo Congratulations!
+echo You are now level %level%!
+echo.
+pause >nul
+goto main
